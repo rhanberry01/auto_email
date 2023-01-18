@@ -88,10 +88,10 @@ class Auto_po_model extends CI_Model {
     }
 
     public function get_srs_suppliers_details($code=null){
-        $this->db = $this->load->database('default_56', TRUE);
-        $branch = $this->session->userdata('srs_branch');
+        $this->db = $this->load->database('default_ms', TRUE);
+       /*  $branch = $this->session->userdata('srs_branch');
         $this->sdb = $branch['database'];
-        $this->db = $this->load->database($this->sdb, TRUE);
+        $this->db = $this->load->database($this->sdb, TRUE); */
         $this->db->select('vendor.vendorcode,
                       vendor.description,
                       vendor.address,
@@ -258,8 +258,7 @@ class Auto_po_model extends CI_Model {
                 where trans_id IN
                 (
                 select order_no from purch_orders where 
-                cast(trans_date as date) >= '2019-06-18'
-                and cast(trans_date as date) <= '2019-06-18'
+                cast(trans_date as date) >= '2023-01-01'
                 and trans_type = '16'
                 ) and trans_type = '16'
                 ) as a INNER JOIN purch_orders as p

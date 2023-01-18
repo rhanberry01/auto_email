@@ -63,9 +63,9 @@ class Auto_po extends CI_Controller {
 
         $suppl = $this->db_con->get_srs_suppliers_details($branch->supplier_id);
         $supp = $suppl[0];
-        /*echo var_dump($supp);
-        exit();*/
-
+        /* echo var_dump($supp);
+        exit();
+ */
 
         // echo var_dump($branch);
         // echo $this->db->last_query();
@@ -279,16 +279,17 @@ class Auto_po extends CI_Controller {
         
         $pdf->Ln();
         $prepared_by = $this->db_con->get_po_prepared_by(16, $branch->order_no);
-        $prepared_by_sign = '1';
-        $prepared_by = 'Juan';
+        $prepared_by = $prepared_by[0];
+        $prepared_by_sign = $prepared_by->sign;
+        $prepared_by = $prepared_by->prepared_by;
         
         $approved_by = $this->db_con->get_po_approved_by(16, $branch->order_no);
-        $approved_by_sign = '13';
-        $approved_by = 'Dela Cruz';
+        $approved_by = $approved_by[0];
+        $approved_by_sign = $approved_by->sign;
+        $approved_by = $approved_by->approved_by;
 
-        
-        $p_sign = BASEPATH.'signatures/'.$prepared_by_sign.'.png';
-        $a_sign = BASEPATH.'signatures/'.$approved_by_sign.'.png';
+        $p_sign = BASEPATH.'signatures/'.$prepared_by_sign;
+        $a_sign = BASEPATH.'signatures/'.$approved_by_sign;
 
         if ($pdf->GetY() > $pdf->getPageHeight() - (PDF_MARGIN_BOTTOM+18))
             $pdf->AddPage();
@@ -366,30 +367,32 @@ class Auto_po extends CI_Controller {
            		$mail->SMTPSecure = 'tls';                                   // Set mailer to use SMTP
                 $mail->Host = 'mail.srssulit.com'; //"smtp.gmail.com";      // setting GMail as our SMTP 
            		$mail->Port       = 587;  //465; 587 ';  // Specify main and backup SMTP servers
-			    $mail->Username = "isd@srssulit.com";
-           		$mail->Password   = 'Srs01212009';  
-			    $mail->setFrom('isd@srssulit.com', 'SAN ROQUE SUPERMARKET');
+			    $mail->Username = "no-reply@srssulit.com";
+           		$mail->Password   = 'isdnoreply2019';  
+			    $mail->setFrom('no-reply@srssulit.com', 'SAN ROQUE SUPERMARKET');
 			    $mail->addReplyTo('no-reply@srssulit.com', 'SRS');
                 // $mail->addCC('sulitsrs12009@gmail.com');
                 // $mail->addCC('alemania.nhelle28@gmail.com');
-                // $cc_supplier = $this->db_con->cc_supplier($supplier_id);
-                // if($cc_supplier !="") {
-                //     if($cc_supplier->email != "" || $cc_supplier->email != null){
-                //         $mail->addCC($cc_supplier->email, $cc_supplier->fname.' '.$cc_supplier->lname);
-                //     }
-                // }
+                /*  $cc_supplier = $this->db_con->cc_supplier($supplier_id);
+                    if($cc_supplier !="") {
+                     if($cc_supplier->email != "" || $cc_supplier->email != null){
+                         $mail->addCC($cc_supplier->email, $cc_supplier->fname.' '.$cc_supplier->lname);
+                     }
+                 } */
 			    //Content
 			    $mail->isHTML(true);
 
 			     $mail->Subject    = "Purchase Order ";
 				 $body = "   <p>Please see attachment  Purchase Order .</p> ";
 				 $mail->MsgHTML($body);  
+                 $recipient = 'srsdevteam2021@gmail.com';
 
 				      $recs = "";
 		            if(is_array($recipient)){
                         $count = 0;
 		                foreach ($recipient as $rec) {
 		                if($rec != null)
+                        echo $rec;
 		                    $mail->AddAddress($rec);
 		                    $recs .= $rec.",";
 

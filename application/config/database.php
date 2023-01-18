@@ -20,6 +20,23 @@ $db['default']['swap_pre'] = '';
 $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
 
+
+$db['default_ms']['hostname'] = '192.168.0.100';
+$db['default_ms']['username'] = 'markuser'; 
+$db['default_ms']['password'] = 'tseug';
+$db['default_ms']['database'] = 'srsmnova';
+$db['default_ms']['dbdriver'] = 'mssql';
+$db['default_ms']['dbprefix'] = '';
+$db['default_ms']['pconnect'] = FALSE;
+$db['default_ms']['db_debug'] = FALSE;
+$db['default_ms']['cache_on'] = FALSE;
+$db['default_ms']['cachedir'] = '';
+$db['default_ms']['char_set'] = 'utf8';
+$db['default_ms']['dbcollat'] = 'utf8_general_ci';
+$db['default_ms']['swap_pre'] = '';
+$db['default_ms']['autoinit'] = TRUE;
+$db['default_ms']['stricton'] = FALSE;
+
 $db['default_56']['hostname'] = '192.168.0.56';
 $db['default_56']['username'] = 'root'; 
 $db['default_56']['password'] = '';
