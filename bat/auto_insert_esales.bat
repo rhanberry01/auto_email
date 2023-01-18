@@ -1,0 +1,2 @@
+php index.php Auto_gp_report insert_esales_to_aria
+pause

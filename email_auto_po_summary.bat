@@ -1,0 +1,2 @@
+php index.php auto_po_summary send_auto_po_summary
+pause
