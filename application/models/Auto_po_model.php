@@ -21,6 +21,13 @@ class Auto_po_model extends CI_Model {
         $this->trans_commit();
     }     
 
+    public function update_consig_email($cons_id,$aria_db,$mail_items){
+        $this->db = $this->load->database('aria_db', TRUE);
+        $this->db->where('cons_sales_id',$cons_id);
+        $this->db->update($aria_db.'.0_cons_sales_header',$mail_items);
+    } 
+
+
     public function update_to_purch_orders($items,$id,$trans_type=null){
         $this->db = $this->load->database('default_56', TRUE);
         $this->db->where('order_no',$id);
@@ -42,6 +49,32 @@ class Auto_po_model extends CI_Model {
                     AND c.user_id=d.id;";
         $query = $this->db->query($sql);
         return $query->result();
+    }
+
+    public function get_consignment($aria_db)
+    {
+        $this->db = $this->load->database('aria_db', TRUE);
+        $sql = "select cs.*,cv.cv_date from $aria_db.0_cons_sales_header as cs 
+        LEFT JOIN $aria_db.0_cv_header as cv
+        on cs.cv_id=cv.id where start_date='2022-12-01' and cs.email_sent = 0 ";
+        $query = $this->db->query($sql);
+        return $query->result();
+    }
+    public function get_cons_details($cons_id,$aria_db)
+    {
+        $this->db = $this->load->database('aria_db', TRUE);
+        $sql = "select * from  $aria_db.0_cons_sales_details where cons_det_id = ".$cons_id." ";
+        $query = $this->db->query($sql);
+        return $query->result();
+    }
+    
+
+    public function get_consales_header($cons_id,$aria_db)
+    {
+        $this->db = $this->load->database('aria_db', TRUE);
+        $sql = "select * from $aria_db.0_cons_sales_header as cs where cons_sales_id =".$cons_id." ";
+        $query = $this->db->query($sql);
+        return $query->row();
     }
     
     public function get_po_approved_by($trans_type, $order_no)
@@ -1085,7 +1118,7 @@ class Auto_po_model extends CI_Model {
 
      public function get_database($batch_db = null){
 
-        $this->ddb = $this->load->database('default', true);
+        $this->ddb = $this->load->database('migration', true);
         $sql = "select aria_db, ms_db from auto_aria_branches where ms_db not in('ZORGANIC','ZTOTAL')";
          if($batch_db){
              $sql .=" and aria_db in('".$batch_db."')";    

@@ -21,6 +21,39 @@ $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
 
 
+$db['migration']['hostname'] = '192.168.0.148';
+$db['migration']['username'] = 'root'; 
+$db['migration']['password'] = 'srsnova';
+$db['migration']['database'] = 'migration';
+$db['migration']['dbdriver'] = 'mysql';
+$db['migration']['dbprefix'] = '';
+$db['migration']['pconnect'] = FALSE;
+$db['migration']['db_debug'] = FALSE;
+$db['migration']['cache_on'] = FALSE;
+$db['migration']['cachedir'] = '';
+$db['migration']['char_set'] = 'utf8';
+$db['migration']['dbcollat'] = 'utf8_general_ci';
+$db['migration']['swap_pre'] = '';
+$db['migration']['autoinit'] = TRUE;
+$db['migration']['stricton'] = FALSE;
+
+
+$db['aria_db']['hostname'] = '192.168.0.91';
+$db['aria_db']['username'] = 'root'; 
+$db['aria_db']['password'] = 'srsnova';
+$db['aria_db']['database'] = 'srs_aria_nova';
+$db['aria_db']['dbdriver'] = 'mysql';
+$db['aria_db']['dbprefix'] = '';
+$db['aria_db']['pconnect'] = FALSE;
+$db['aria_db']['db_debug'] = FALSE;
+$db['aria_db']['cache_on'] = FALSE;
+$db['aria_db']['cachedir'] = '';
+$db['aria_db']['char_set'] = 'utf8';
+$db['aria_db']['dbcollat'] = 'utf8_general_ci';
+$db['aria_db']['swap_pre'] = '';
+$db['aria_db']['autoinit'] = TRUE;
+$db['aria_db']['stricton'] = FALSE;
+
 $db['default_ms']['hostname'] = '192.168.0.100';
 $db['default_ms']['username'] = 'markuser'; 
 $db['default_ms']['password'] = 'tseug';

@@ -36,6 +36,112 @@ class Auto_po extends CI_Controller {
         public function trans_commit(){
         $this->trans_commit();
     }     
+    public function create_consign_pdf($cons_id=null, $branch_name=null,$aria_db = null){
+        $this->load->library('my_tcpdf');
+        /* $branch_name = 'NOVALICHES';
+        $aria_db = 'srs_aria_nova';
+        $cons_id = 5870; */
+        $header =  $this->db_con->get_consales_header($cons_id,$aria_db);
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, 'Letter', false, 'UTF-8', false);
+ 
+         $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+         $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+         $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+         $pdf->SetFooterMargin(PDF_MARGIN_BOTTOM);
+         $pdf->setPrintHeader(false);
+         $pdf->setPrintFooter(true);
+
+         $company = $this->db_con->get_company_profile();
+         $pdf->AddPage();
+         
+         $pdf->SetFont('helvetica', 'B', 15);
+         $pdf->Cell(150, 15, 'Consignment', 0, false, 'L', 0, '', 0, false, 'M', 'M');
+         $pdf->Ln(10);
+         $pdf->SetFont('helvetica', null, 12);
+         $pdf->Cell(150, 15, SRS_NAME.'-'.$branch_name, 0, false, 'L', 0, '', 0, false, 'M', 'M');
+         $pdf->Ln(10);
+         $pdf->SetFont('helvetica', null, 10);
+         $pdf->Cell(70, 15, "Period : ".date('Y-m-d',strtotime($header->start_date))." - ".date('Y-m-d',strtotime($header->end_date)), 0, false, 'L', 0, '', 0, false, 'M', 'M');
+         $pdf->Ln(5);
+         $pdf->Cell(70, 15, "Commision : ".$header->t_commission, 0, false, 'L', 0, '', 0, false, 'M', 'M');
+         $pdf->Ln(5);
+         $pdf->Cell(70, 15, "Consignor : ".$header->supp_name, 0, false, 'L', 0, '', 0, false, 'M', 'M');
+         $pdf->Ln(5);
+         $pdf->Cell(70, 15, "Reference : CS".$header->cons_sales_id, 0, false, 'L', 0, '', 0, false, 'M', 'M');
+
+         $pdf->Ln(10);
+         $pdf->SetFont('helvetica', 'B', 12);
+         $header = array('ProductCode', 'Description ', 'UOM ',' Qty', 'Sales ','Cost' , 'Commission');
+         // Header
+         $w = array(30, 50, 25 ,10, 25,  20,30 );
+         $num_headers = count($header);
+        
+         for($i = 0; $i < $num_headers; $i++) {
+             if($i > 2){
+                 $pdf->Cell($w[$i], 8, $header[$i], 0, 0, 'R', 0);
+             }
+             else{
+                $pdf->Cell($w[$i], 8, $header[$i], 0, 0, 'L', 0);
+             }
+               
+         }
+         $pdf->Ln(6);
+ 
+         $fill = 0;
+         $cons_details_res = $this->db_con->get_cons_details($cons_id,$aria_db);
+         $totqty = 0;
+         $totsales = 0;
+         $totcos = 0;
+         $totcom = 0;
+         foreach($cons_details_res as $row) {
+            $pdf->SetFont('courier', null, 8);
+            $pdf->Cell($w[0], 6, $row->prod_code, 0, 0, 'L', $fill);
+            $pdf->SetFont('courier', 'B', 9);
+            $pdf->Cell($w[1], 6, ' '.$row->description, 0, 0, 'L', $fill);
+            $pdf->Cell($w[2], 6, ' '.$row->uom, 0, 0, 'L', $fill);
+            $pdf->Cell($w[3], 6, ' '.number_format($row->qty,2).' ', 0, 0, 'R', $fill);
+            $pdf->Cell($w[4], 6, ' '.number_format($row->sales,2).' ', 0, 0, 'R', $fill);
+            $pdf->Cell($w[5], 6, ' '.number_format($row->cos,2).' ', 0, 0, 'R', $fill);
+            $pdf->Cell($w[6], 6, ' '.number_format($row->sales,2) - number_format($row->cos,2).' ', 0, 0, 'R', $fill);
+            $totqty =  $totqty + $row->qty;
+            $totsales = $totsales + $row->sales;
+            $totcos = $totcos + $row->cos;
+            $totcom =  $totcom + ($row->sales-$row->cos);
+            $pdf->Ln(4);
+            $pdf->Ln(8);
+           
+         }
+         if ($pdf->GetY() > $pdf->getPageHeight() - (PDF_MARGIN_BOTTOM+10))
+         $pdf->AddPage();
+
+         $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->Cell($w[0], 6, '', 0, 0, 'R', $fill);
+            $pdf->Cell($w[1], 6, '', 0, 0, 'R', $fill);
+            $pdf->Cell($w[2], 6, 'Total', 0, 0, 'R', $fill);
+            $pdf->Cell($w[3], 6, $totqty, 0, 0, 'R', $fill);
+            $pdf->Cell($w[4], 6, $totsales, 0, 0, 'R', $fill);
+            $pdf->Cell($w[5], 6,  $totcos, 0, 0, 'R', $fill);
+            $pdf->Cell($w[6], 6, $totcom, 0, 0, 'R', $fill);
+         $pdf->Ln(4);
+         $pdf->Cell($w[0], 6, '*NOTE: (Please create invoice amounting )'.$totcos, 0, 0, 'L', $fill);
+         $pdf->Ln(8);
+         $pdf->Cell($w[1], 6, 'Requested By:', 0, 0, 'L', $fill);
+         $pdf->Cell($w[3], 6, 'Noted By:', 0, 0, 'L', $fill);
+         $pdf->Cell($w[4], 6, '', 0, 0, 'L', $fill);
+         $pdf->Cell($w[5], 6, '', 0, 0, 'L', $fill);
+         $pdf->Cell($w[6], 6, 'Approved By:', 0, 0, 'L', $fill);
+         $pdf->Ln(10);
+         $pdf->Cell($w[1], 6, '', 0, 0, 'L', $fill);
+         $pdf->Cell($w[3], 6, 'Rowena Villar', 0, 0, 'L', $fill);
+         $pdf->Cell($w[4], 6, '', 0, 0, 'L', $fill);
+         $pdf->Cell($w[5], 6, '', 0, 0, 'L', $fill);
+         $pdf->Cell($w[6], 6, 'Dustin Uy', 0, 0, 'L', $fill);
+         $pdf->Ln(10);
+         $pdf->Footer();
+        //$pdf->Output($branch_name.'.pdf', 'I');
+        return $pdf->Output(date('Y-m-d').' CS'.$cons_id.'.pdf', 'S');
+
+    }
 
         public function create_po_pdf($po=null){
         	 $this->load->library('my_tcpdf');
@@ -48,8 +154,8 @@ class Auto_po extends CI_Controller {
         $pdf->SetFooterMargin(PDF_MARGIN_BOTTOM);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(true);
-    
         // $branch = $this->po_model->get_po_list_breif($po);
+       // $po = 'PO1197845 ';
         $branch = $this->db_con->get_po_list_breif($po,16);
         $branch = $branch[0];
          //echo var_dump($branch);
@@ -326,18 +432,36 @@ class Auto_po extends CI_Controller {
         $pdf->Cell($ww+5, 6, $approved_by, 'RB', 0, 'L', $fill);
         
         if ($prepared_by_sign != '')
-            $pdf->Image($p_sign,30,249,0,20);
+            $pdf->Image($p_sign,20,230,0,20);
 
         if ($approved_by_sign != '')
-            $pdf->Image($a_sign,154,249,0,20);
+            $pdf->Image($a_sign,154,230,0,20);
         
         
         
         $pdf->SetFont('helvetica', null, 8);
         $pdf->SetY($pdf->getPageHeight() - (PDF_MARGIN_BOTTOM+4));
-        // $pdf->Footer();
-        // $pdf->Output(phpnow().$po.'.pdf', 'I');
+       //  $pdf->Footer();
+         //$pdf->Output($po.'.pdf', 'I');
         return $pdf->Output(date('Y-m-d').$po.'.pdf', 'S');
+    }
+
+    public function email_consignment(){
+        $db = $this->db_con->get_database();
+
+		foreach ($db as $i => $dbdetails) {
+			# code...
+			$ms_db = $dbdetails->ms_db;
+			$aria_db = $dbdetails->aria_db;
+            $branch_name = $dbdetails->branch_name;
+            echo $aria_db.PHP_EOL;
+            $consignment = $this->db_con->get_consignment($aria_db);
+            foreach ($consignment as $i => $condetails) {
+                $cons_id = $condetails->cons_sales_id;
+                $this->send_consignment_email($cons_id, $branch_name,$aria_db);
+            }
+            echo PHP_EOL;
+        }
     }
 
 	  public function email_sample(){ 
@@ -356,6 +480,82 @@ class Auto_po extends CI_Controller {
 
  
     }    
+  
+
+    public function send_consignment_email($cons_id = null, $branch_name = null,$aria_db=null){
+        $this->load->library('my_phpmailer');
+        $mail = new PHPMailer(true);                              // Passing `true` enables exceptions
+           try {
+               $mail->isSMTP();   
+               $mail->SMTPAuth   = true; // enabled SMTP authentication maam 
+                  $mail->SMTPSecure = 'tls';                                   // Set mailer to use SMTP
+               $mail->Host = 'mail.srssulit.com'; //"smtp.gmail.com";      // setting GMail as our SMTP 
+                  $mail->Port       = 587;  //465; 587 ';  // Specify main and backup SMTP servers
+               $mail->Username = "no-reply@srssulit.com";
+                  $mail->Password   = 'Srs01212009srs';  
+               $mail->setFrom('no-reply@srssulit.com', 'SAN ROQUE SUPERMARKET');
+               $mail->addReplyTo('no-reply@srssulit.com', 'SRS');
+               
+               //Content
+               $mail->isHTML(true);
+
+                $mail->Subject    = "Consignment Sales Report                ";
+                $body = "   <p>Please see attachment  Consignment Sales Report.</p> ";
+                $mail->MsgHTML($body);
+                $header =  $this->db_con->get_consales_header($cons_id,$aria_db);
+                $email_adds  = explode(';',  $header->supp_email); 
+                $recipient =  $email_adds;
+                $recipientcc =  'srsdevteam2021@gmail.com';
+                $mail->addCC($recipientcc);
+                     $recs = "";
+                    if(is_array($recipient)){
+                       $count = 0;
+                       foreach ($recipient as $rec) {
+                       if($rec != null)
+                       echo $rec;
+                           $mail->AddAddress($rec);
+                           $recs .= $rec.",";
+                       }
+                   }
+                   else{ 
+                       $mail->AddAddress($recipient);
+                       $recs .= $recipient.",";
+                       echo $recipient;
+                } 
+
+           /*  foreach ($list_po_ref as $row) { */
+            $pdf = $this->create_consign_pdf($cons_id, $branch_name,$aria_db);
+               $mail->AddStringAttachment($pdf, 'CS'.$cons_id.".pdf");
+          /*  } */
+
+           $mail_mail = 0;
+           if(!$mail->Send()) {
+               $mail->ClearAddresses();
+               $mail->ClearAttachments();
+               echo $mail->ErrorInfo."error".PHP_EOL;
+           } else {
+               $mail_mail = 1;
+               $mail->ClearAddresses();
+               $mail->ClearAttachments();
+               $recs = substr($recs, 0,-1); 
+               echo "success".PHP_EOL;
+
+              /*   foreach ($list_po_ref as $row) { */
+                   $mail_items = array(
+                               "email_sent"=>1
+                           );
+                   $this->db_con->update_consig_email($cons_id,$aria_db,$mail_items);
+            /*    }  */
+               
+
+           }
+               echo 'Message has been sent';
+           } catch (Exception $e) {
+               echo 'Message could not be sent. Mailer Error: ', $mail->ErrorInfo;
+           }
+
+    }
+
 
 	public function send_po_mail_test($po_id ='',$list_po_ref='',$recipient=null, $supplier_id=null){
         $this->load->model("Auto_po_summary_model","auto_po_summary");
@@ -363,12 +563,12 @@ class Auto_po extends CI_Controller {
 		 $mail = new PHPMailer(true);                              // Passing `true` enables exceptions
 			try {
 			    $mail->isSMTP();   
-			    $mail->SMTPAuth   = true; // enabled SMTP authentication maam dito n p akosige
+			    $mail->SMTPAuth   = true; // enabled SMTP authentication maam 
            		$mail->SMTPSecure = 'tls';                                   // Set mailer to use SMTP
                 $mail->Host = 'mail.srssulit.com'; //"smtp.gmail.com";      // setting GMail as our SMTP 
            		$mail->Port       = 587;  //465; 587 ';  // Specify main and backup SMTP servers
 			    $mail->Username = "no-reply@srssulit.com";
-           		$mail->Password   = 'isdnoreply2019';  
+           		$mail->Password   = 'Srs01212009srs';  
 			    $mail->setFrom('no-reply@srssulit.com', 'SAN ROQUE SUPERMARKET');
 			    $mail->addReplyTo('no-reply@srssulit.com', 'SRS');
                 // $mail->addCC('sulitsrs12009@gmail.com');
@@ -385,7 +585,7 @@ class Auto_po extends CI_Controller {
 			     $mail->Subject    = "Purchase Order ";
 				 $body = "   <p>Please see attachment  Purchase Order .</p> ";
 				 $mail->MsgHTML($body);  
-                 $recipient = 'srsdevteam2021@gmail.com';
+                // $recipient = 'srsdevteam2021@gmail.com';
 
 				      $recs = "";
 		            if(is_array($recipient)){
@@ -441,12 +641,12 @@ class Auto_po extends CI_Controller {
                 $recs = substr($recs, 0,-1); 
                 echo "success".PHP_EOL;
 
-                foreach ($list_po_ref as $row) {
+                 foreach ($list_po_ref as $row) {
                     $mail_items = array(
                                 "email"=>1
                             );
                     $this->db_con->update_to_purch_orders($mail_items,$row->order_no,16);
-                }
+                } 
 	            
 
             }
@@ -528,7 +728,7 @@ class Auto_po extends CI_Controller {
             $mail->Host = 'mail.srssulit.com'; //"smtp.gmail.com";      // setting GMail as our SMTP 
             $mail->Port       = 587;  //465; 587 ';  // Specify main and backup SMTP servers
             $mail->Username = "no-reply@srssulit.com";
-            $mail->Password   = 'isdnoreply2019';  
+            $mail->Password   = 'Srs01212009srs';  
             $mail->setFrom('no-reply@srssulit.com', 'SAN ROQUE SUPERMARKET');
             $mail->addReplyTo('no-reply@srssulit.com', 'SRS');
             $mail->addCC('sulitsrs12009@gmail.com');
